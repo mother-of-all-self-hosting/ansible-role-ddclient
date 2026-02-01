@@ -1,0 +1,12 @@
+{#
+SPDX-FileCopyrightText: 2023 Slavi Pantaleev
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+#}
+
+[Unit]
+Description=Performs container registry purging
+
+[Service]
+Type=oneshot
+ExecStart={{ docker_registry_purger_bin_path }}/purge
