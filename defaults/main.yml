@@ -82,11 +82,13 @@ ddclient_daemon_interval: "300"
 ddclient_use: "web"
 
 # Specify the endpoint to use to determine your external IP
-ddclient_web: "https://cloudflare.com/cdn-cgi/trace"
+# Example: https://cloudflare.com/cdn-cgi/trace
+ddclient_web: ""
 
 # Specify the field to extract the IP address from
-# If your endpoint defined in `ddclient_web` does not need this, just set it to ""
-ddclient_web_skip: "ip="
+# Leave this empty if your endpoint defined in `ddclient_web` does not need it
+# Example: ip=
+ddclient_web_skip: ""
 
 ddclient_additional_configuration_blocks: []
 
