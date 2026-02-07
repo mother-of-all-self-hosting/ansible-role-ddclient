@@ -15,7 +15,7 @@
     - "{{ ddclient_base_path }}"
     - "{{ ddclient_config_path }}"
 
-- name: Ensure ddclient support files installed
+- name: Ensure ddclient support file installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/{{ item }}.j2"
     dest: "{{ ddclient_base_path }}/{{ item }}"
