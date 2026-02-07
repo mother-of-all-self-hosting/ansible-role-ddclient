@@ -96,6 +96,10 @@ ddclient_web: ""
 # Example: ip=
 ddclient_web_skip: ""
 
+# Specify the interface to obtain IP address from
+# Default: ppp0
+ddclient_if: ""
+
 ddclient_additional_configuration_blocks: []
 
 # Holds the configurations (the domains to update DNS for, the providers they use, etc.)

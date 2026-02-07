@@ -58,6 +58,16 @@ After adjusting the hostname, make sure to adjust your DNS records to point the 
 
 **Note**: hosting ddclient under a subpath (by configuring the `ddclient_path_prefix` variable) does not seem to be possible due to ddclient's technical limitations.
 
+### Configuring router option (optional)
+
+By default the service is configured to use `web` as the option for a router, from which ddclient is to retrieve an IP address. See [this page](https://ddclient.net/routers.html) on the official documentation for details.
+
+To change the router to `if`, you can add the following configuration to your `vars.yml` file:
+
+```yaml
+ddclient_use: if
+```
+
 ### Extending the configuration
 
 There are some additional things you may wish to configure about the service.
