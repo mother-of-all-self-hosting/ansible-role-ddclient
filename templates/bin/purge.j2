@@ -15,9 +15,9 @@ fi
 {{ devture_systemd_docker_base_host_command_docker }} run \
 $docker_run_flags \
 --rm \
---network={{ docker_registry_purger_container_network }} \
---env-file={{ docker_registry_purger_base_path }}/env \
-{% for arg in docker_registry_purger_container_extra_arguments %}
+--network={{ ddclient_container_network }} \
+--env-file={{ ddclient_base_path }}/env \
+{% for arg in ddclient_container_extra_arguments %}
 {{ arg }} \
 {% endfor %}
-{{ docker_registry_purger_container_image }}
+{{ ddclient_container_image }}

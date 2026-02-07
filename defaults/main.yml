@@ -8,61 +8,61 @@
 
 ---
 
-docker_registry_purger_enabled: true
+ddclient_enabled: true
 
-docker_registry_purger_identifier: docker-registry-purger
-docker_registry_purger_base_path: "/{{ docker_registry_purger_identifier }}"
-docker_registry_purger_bin_path: "{{ docker_registry_purger_base_path }}/bin"
+ddclient_identifier: docker-registry-purger
+ddclient_base_path: "/{{ ddclient_identifier }}"
+ddclient_bin_path: "{{ ddclient_base_path }}/bin"
 
-docker_registry_purger_version: 1.0.0
+ddclient_version: 1.0.0
 
-docker_registry_purger_uid: ""
-docker_registry_purger_gid: ""
+ddclient_uid: ""
+ddclient_gid: ""
 
-docker_registry_purger_container_image: "{{ docker_registry_purger_container_image_registry_prefix }}devture/docker-registry-purger:{{ docker_registry_purger_container_image_tag }}"
-docker_registry_purger_container_image_tag: "{{ docker_registry_purger_version }}"
-docker_registry_purger_container_image_registry_prefix: "{{ docker_registry_purger_container_image_registry_prefix_upstream }}"
-docker_registry_purger_container_image_registry_prefix_upstream: "{{ docker_registry_purger_container_image_registry_prefix_upstream_default }}"
-docker_registry_purger_container_image_registry_prefix_upstream_default: docker.io/
-docker_registry_purger_container_image_force_pull: "{{ docker_registry_purger_container_image.endswith(':latest') }}"
+ddclient_container_image: "{{ ddclient_container_image_registry_prefix }}devture/docker-registry-purger:{{ ddclient_container_image_tag }}"
+ddclient_container_image_tag: "{{ ddclient_version }}"
+ddclient_container_image_registry_prefix: "{{ ddclient_container_image_registry_prefix_upstream }}"
+ddclient_container_image_registry_prefix_upstream: "{{ ddclient_container_image_registry_prefix_upstream_default }}"
+ddclient_container_image_registry_prefix_upstream_default: docker.io/
+ddclient_container_image_force_pull: "{{ ddclient_container_image.endswith(':latest') }}"
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
-docker_registry_purger_container_network: "{{ docker_registry_purger_identifier }}"
+ddclient_container_network: "{{ ddclient_identifier }}"
 
 # A list of additional container networks that the container would be connected to.
 # The playbook does not create these networks, so make sure they already exist.
-docker_registry_purger_container_additional_networks: "{{ docker_registry_purger_container_additional_networks_auto + docker_registry_purger_container_additional_networks_custom }}"
-docker_registry_purger_container_additional_networks_auto: []
-docker_registry_purger_container_additional_networks_custom: []
+ddclient_container_additional_networks: "{{ ddclient_container_additional_networks_auto + ddclient_container_additional_networks_custom }}"
+ddclient_container_additional_networks_auto: []
+ddclient_container_additional_networks_custom: []
 
 # A list of extra arguments to pass to the container (`docker run` command)
-docker_registry_purger_container_extra_arguments: "{{ docker_registry_purger_container_extra_arguments_auto + docker_registry_purger_container_extra_arguments_custom }}"
-docker_registry_purger_container_extra_arguments_auto: []
-docker_registry_purger_container_extra_arguments_custom: []
+ddclient_container_extra_arguments: "{{ ddclient_container_extra_arguments_auto + ddclient_container_extra_arguments_custom }}"
+ddclient_container_extra_arguments_auto: []
+ddclient_container_extra_arguments_custom: []
 
 # A full URL to the container registry.
 # Controls the `REGISTRY_URL` environment variable
-docker_registry_purger_registry_url: ""
+ddclient_registry_url: ""
 
 # Controls the `NOF_TAGS_TO_KEEP` environment variable
-docker_registry_purger_nof_tags_to_keep: 3
+ddclient_nof_tags_to_keep: 3
 
 # Controls the `IMAGE_IGNORE_REGEX` environment variable
-docker_registry_purger_image_ignore_regex: ""
+ddclient_image_ignore_regex: ""
 
 # Controls the `DRY_RUN` environment variable
-docker_registry_purger_dry_run: false
+ddclient_dry_run: false
 
-# docker_registry_purger_schedule contains a systemd OnCalendar definition which controls how often `registry-purger.timer` runs
-docker_registry_purger_schedule: 'Sunday *-*-* 06:30:00'
+# ddclient_schedule contains a systemd OnCalendar definition which controls how often `registry-purger.timer` runs
+ddclient_schedule: 'Sunday *-*-* 06:30:00'
 
 # Specify the timezone
-docker_registry_purger_environment_variables_tz: UTC
+ddclient_environment_variables_tz: UTC
 
-# docker_registry_purger_container_additional_environment_variables contains a multiline string with additional environment variables to pass to the container.
+# ddclient_container_additional_environment_variables contains a multiline string with additional environment variables to pass to the container.
 #
 # Example:
-# docker_registry_purger_container_additional_environment_variables: |
+# ddclient_container_additional_environment_variables: |
 #   VAR=1
 #   ANOTHER=value
-docker_registry_purger_container_additional_environment_variables: ""
+ddclient_container_additional_environment_variables: ""

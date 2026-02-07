@@ -9,38 +9,38 @@
     path: "{{ item }}"
     state: directory
     mode: "0750"
-    owner: "{{ docker_registry_purger_uid }}"
-    group: "{{ docker_registry_purger_gid }}"
+    owner: "{{ ddclient_uid }}"
+    group: "{{ ddclient_gid }}"
   with_items:
-    - "{{ docker_registry_purger_base_path }}"
-    - "{{ docker_registry_purger_bin_path }}"
+    - "{{ ddclient_base_path }}"
+    - "{{ ddclient_bin_path }}"
 
 - name: Ensure ddclient support files installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/{{ item }}.j2"
-    dest: "{{ docker_registry_purger_base_path }}/{{ item }}"
+    dest: "{{ ddclient_base_path }}/{{ item }}"
     mode: "0640"
-    owner: "{{ docker_registry_purger_uid }}"
-    group: "{{ docker_registry_purger_gid }}"
+    owner: "{{ ddclient_uid }}"
+    group: "{{ ddclient_gid }}"
   with_items:
     - env
 
 - name: Ensure ddclient bin files installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/bin/{{ item }}.j2"
-    dest: "{{ docker_registry_purger_bin_path }}/{{ item }}"
-    owner: "{{ docker_registry_purger_uid }}"
-    group: "{{ docker_registry_purger_gid }}"
+    dest: "{{ ddclient_bin_path }}/{{ item }}"
+    owner: "{{ ddclient_uid }}"
+    group: "{{ ddclient_gid }}"
     mode: "0750"
   with_items:
     - purge
 
 - name: Ensure ddclient image is pulled
   community.docker.docker_image:
-    name: "{{ docker_registry_purger_container_image }}"
+    name: "{{ ddclient_container_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ docker_registry_purger_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else docker_registry_purger_container_image_force_pull }}"
+    force_source: "{{ ddclient_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else ddclient_container_image_force_pull }}"
   register: result
   retries: "{{ devture_playbook_help_container_retries_count }}"
   delay: "{{ devture_playbook_help_container_retries_delay }}"
@@ -49,14 +49,14 @@
 - name: Ensure ddclient container network is created
   community.docker.docker_network:
     enable_ipv6: "{{ devture_systemd_docker_base_ipv6_enabled }}"
-    name: "{{ docker_registry_purger_container_network }}"
+    name: "{{ ddclient_container_network }}"
     driver: bridge
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
 
 - name: Ensure ddclient systemd services are present
   ansible.builtin.template:
     src: "{{ role_path }}/templates/systemd/docker-registry-purger.{{ item }}.j2"
-    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ docker_registry_purger_identifier }}.{{ item }}"
+    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ ddclient_identifier }}.{{ item }}"
     mode: "0644"
   with_items:
     - service

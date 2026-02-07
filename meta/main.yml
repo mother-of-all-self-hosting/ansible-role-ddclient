@@ -1,7 +1,7 @@
 galaxy_info:
   author: mash
   company: mash
-  role_name: docker_registry_purger
+  role_name: ddclient
   namespace: mash
   description: ddclient
   platforms:

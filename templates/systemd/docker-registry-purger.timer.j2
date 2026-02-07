@@ -5,11 +5,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 #}
 
 [Unit]
-Description=Launches the {{ docker_registry_purger_identifier }}.service periodically
+Description=Launches the {{ ddclient_identifier }}.service periodically
 
 [Timer]
-Unit={{ docker_registry_purger_identifier }}.service
-OnCalendar={{ docker_registry_purger_schedule }}
+Unit={{ ddclient_identifier }}.service
+OnCalendar={{ ddclient_schedule }}
 
 [Install]
 WantedBy=timers.target
