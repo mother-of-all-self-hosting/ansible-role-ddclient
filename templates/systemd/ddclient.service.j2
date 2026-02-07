@@ -23,13 +23,14 @@ Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ devture_systemd_docker_base_container_stop_grace_time_seconds }} {{ ddclient_identifier }} 2>/dev/null || true'
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ ddclient_identifier }} 2>/dev/null || true'
 
+{#
+  PUID and PGID are specified on env.j2 to run the container as ddclient_uid:ddclient_gid
+  See: https://github.com/linuxserver/docker-ddclient/blob/master/README.md#user--group-identifiers
+#}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --rm \
       --name={{ ddclient_identifier }} \
       --log-driver=none \
-      --user={{ ddclient_uid }}:{{ ddclient_gid }} \
-      --cap-drop=ALL \
-      --read-only \
       --network={{ ddclient_container_network }} \
       --env-file={{ ddclient_base_path }}/env \
       --mount type=bind,src={{ ddclient_config_path }},dst=/config \
