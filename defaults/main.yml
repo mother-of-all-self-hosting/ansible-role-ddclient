@@ -18,7 +18,7 @@ ddclient_enabled: true
 
 ddclient_identifier: ddclient
 ddclient_base_path: "/{{ ddclient_identifier }}"
-ddclient_bin_path: "{{ ddclient_base_path }}/bin"
+ddclient_config_path: "{{ ddclient_base_path }}/config"
 
 # renovate: datasource=docker depName=linuxserver/ddclient versioning=semver
 ddclient_version: 4.0.0

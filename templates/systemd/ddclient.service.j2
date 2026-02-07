@@ -31,11 +31,8 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --cap-drop=ALL \
       --read-only \
       --network={{ ddclient_container_network }} \
-      {% if ddclient_container_http_host_bind_port %}
-      -p {{ ddclient_container_http_host_bind_port }}:{{ ddclient_container_http_port }} \
-      {% endif %}
       --env-file={{ ddclient_base_path }}/env \
-      --label-file={{ ddclient_base_path }}/labels \
+      --mount type=bind,src={{ ddclient_config_path }},dst=/config \
       {% for volume in ddclient_container_additional_volumes %}
       --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options else '' }} \
       {% endfor %}
