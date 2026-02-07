@@ -1,62 +1,62 @@
 <!--
-SPDX-FileCopyrightText: 2020 - 2024 MDAD project contributors
-SPDX-FileCopyrightText: 2020 - 2024 Slavi Pantaleev
 SPDX-FileCopyrightText: 2020 Aaron Raimist
 SPDX-FileCopyrightText: 2020 Chris van Dijk
 SPDX-FileCopyrightText: 2020 Dominik Zajac
 SPDX-FileCopyrightText: 2020 Mickaël Cornière
+SPDX-FileCopyrightText: 2020-2024 MDAD project contributors
+SPDX-FileCopyrightText: 2020-2024 Slavi Pantaleev
 SPDX-FileCopyrightText: 2022 François Darveau
 SPDX-FileCopyrightText: 2022 Julian Foad
 SPDX-FileCopyrightText: 2022 Warren Bailey
 SPDX-FileCopyrightText: 2023 Antonis Christofides
 SPDX-FileCopyrightText: 2023 Felix Stupp
 SPDX-FileCopyrightText: 2023 Pierre 'McFly' Marty
-SPDX-FileCopyrightText: 2024 - 2025 Suguru Hirahara
+SPDX-FileCopyrightText: 2024-2026 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-# Setting up Databasus
+# Setting up ddclient
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Databasus](https://databasus.com/) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [ddclient](https://ddclient.com/) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
-Databasus is free software for backing up database of PostgreSQL, MySQL, MariaDB, and MongoDB.
+ddclient is free software for backing up database of PostgreSQL, MySQL, MariaDB, and MongoDB.
 
-See the project's [documentation](https://databasus.com/installation) to learn what Databasus does and why it might be useful to you.
+See the project's [documentation](https://ddclient.com/installation) to learn what ddclient does and why it might be useful to you.
 
 ## Adjusting the playbook configuration
 
-To enable Databasus with this role, add the following configuration to your `vars.yml` file.
+To enable ddclient with this role, add the following configuration to your `vars.yml` file.
 
 **Note**: the path should be something like `inventory/host_vars/mash.example.com/vars.yml` if you use the [MASH Ansible playbook](https://github.com/mother-of-all-self-hosting/mash-playbook).
 
 ```yaml
 ########################################################################
 #                                                                      #
-# databasus                                                            #
+# ddclient                                                             #
 #                                                                      #
 ########################################################################
 
-databasus_enabled: true
+ddclient_enabled: true
 
 ########################################################################
 #                                                                      #
-# /databasus                                                           #
+# /ddclient                                                            #
 #                                                                      #
 ########################################################################
 ```
 
 ### Set the hostname
 
-To enable Databasus you need to set the hostname as well. To do so, add the following configuration to your `vars.yml` file. Make sure to replace `example.com` with your own value.
+To enable ddclient you need to set the hostname as well. To do so, add the following configuration to your `vars.yml` file. Make sure to replace `example.com` with your own value.
 
 ```yaml
-databasus_hostname: "example.com"
+ddclient_hostname: "example.com"
 ```
 
 After adjusting the hostname, make sure to adjust your DNS records to point the domain to your server.
 
-**Note**: hosting Databasus under a subpath (by configuring the `databasus_path_prefix` variable) does not seem to be possible due to Databasus's technical limitations.
+**Note**: hosting ddclient under a subpath (by configuring the `ddclient_path_prefix` variable) does not seem to be possible due to ddclient's technical limitations.
 
 ### Extending the configuration
 
@@ -64,7 +64,7 @@ There are some additional things you may wish to configure about the service.
 
 Take a look at:
 
-- [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `databasus_environment_variables_additional_variables` variable
+- [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `ddclient_environment_variables_additional_variables` variable
 
 ## Installing
 
@@ -78,16 +78,16 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 ## Usage
 
-After running the command for installation, Databasus becomes available at the specified hostname like `https://example.com`.
+After running the command for installation, ddclient becomes available at the specified hostname like `https://example.com`.
 
 To get started, open the URL with a web browser, and register the account. **Note that the first registered user becomes an administrator automatically.**
 
-See [this section](https://databasus.com/installation#getting-started) on the documentation for details about its usage to set up backup jobs.
+See [this section](https://ddclient.com/installation#getting-started) on the documentation for details about its usage to set up backup jobs.
 
 ## Troubleshooting
 
-The FAQ page is available at <https://databasus.com/faq>.
+The FAQ page is available at <https://ddclient.com/faq>.
 
 ### Check the service's logs
 
-You can find the logs in [systemd-journald](https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html) by logging in to the server with SSH and running `journalctl -fu databasus` (or how you/your playbook named the service, e.g. `mash-databasus`).
+You can find the logs in [systemd-journald](https://www.freedesktop.org/software/systemd/man/systemd-journald.service.html) by logging in to the server with SSH and running `journalctl -fu ddclient` (or how you/your playbook named the service, e.g. `mash-ddclient`).
