@@ -3,7 +3,7 @@ galaxy_info:
   company: mash
   role_name: docker_registry_purger
   namespace: mash
-  description: Docker Registry Purger
+  description: ddclient
   platforms:
     - name: Debian
       versions:

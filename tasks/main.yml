@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2023 Slavi Pantaleev
-# SPDX-FileCopyrightText: 2025 Suguru Hirahara
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Perform Docker Registry Purger installation tasks
+- name: Perform ddclient installation tasks
   when: docker_registry_purger_enabled | bool
   tags:
     - setup-all
@@ -12,16 +12,16 @@
     - install-all
     - install-docker-registry-purger
   block:
-    - name: Validate Docker Registry Purger configuration
+    - name: Validate ddclient configuration
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-    - name: Install Docker Registry Purger
+    - name: Install ddclient
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
-- name: Perform Docker Registry Purger uninstallation tasks
+- name: Perform ddclient uninstallation tasks
   when: not docker_registry_purger_enabled | bool
   tags:
     - setup-all
     - setup-docker-registry-purger
   block:
-    - name: Uninstall Docker Registry Purger
+    - name: Uninstall ddclient
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
