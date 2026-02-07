@@ -25,16 +25,6 @@
   with_items:
     - env
 
-- name: Ensure ddclient bin files installed
-  ansible.builtin.template:
-    src: "{{ role_path }}/templates/bin/{{ item }}.j2"
-    dest: "{{ ddclient_bin_path }}/{{ item }}"
-    owner: "{{ ddclient_uid }}"
-    group: "{{ ddclient_gid }}"
-    mode: "0750"
-  with_items:
-    - purge
-
 - name: Ensure ddclient image is pulled
   community.docker.docker_image:
     name: "{{ ddclient_container_image }}"
@@ -53,11 +43,8 @@
     driver: bridge
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
 
-- name: Ensure ddclient systemd services are present
+- name: Ensure ddclient systemd service is present
   ansible.builtin.template:
-    src: "{{ role_path }}/templates/systemd/ddclient.{{ item }}.j2"
-    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ ddclient_identifier }}.{{ item }}"
+    src: "{{ role_path }}/templates/systemd/ddclient.service.j2"
+    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ ddclient_identifier }}.service"
     mode: "0644"
-  with_items:
-    - service
-    - timer

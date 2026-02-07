@@ -40,22 +40,6 @@ ddclient_container_extra_arguments: "{{ ddclient_container_extra_arguments_auto 
 ddclient_container_extra_arguments_auto: []
 ddclient_container_extra_arguments_custom: []
 
-# A full URL to the container registry.
-# Controls the `REGISTRY_URL` environment variable
-ddclient_registry_url: ""
-
-# Controls the `NOF_TAGS_TO_KEEP` environment variable
-ddclient_nof_tags_to_keep: 3
-
-# Controls the `IMAGE_IGNORE_REGEX` environment variable
-ddclient_image_ignore_regex: ""
-
-# Controls the `DRY_RUN` environment variable
-ddclient_dry_run: false
-
-# ddclient_schedule contains a systemd OnCalendar definition which controls how often `registry-purger.timer` runs
-ddclient_schedule: 'Sunday *-*-* 06:30:00'
-
 # Specify the timezone
 ddclient_environment_variables_tz: UTC
 
