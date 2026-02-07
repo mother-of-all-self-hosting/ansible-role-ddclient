@@ -1,8 +1,9 @@
+---
 galaxy_info:
-  author: mash
-  company: mash
+  author: Suguru Hirahara
+  company: progressiv
   role_name: ddclient
-  namespace: mash
+  namespace: progressiv
   description: ddclient
   platforms:
     - name: Debian
@@ -18,4 +19,4 @@ galaxy_info:
       versions:
         - all
   license: AGPL-3.0-or-later
-  min_ansible_version: '2.1'
+  min_ansible_version: "2.1"
