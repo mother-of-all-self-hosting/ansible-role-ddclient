@@ -10,7 +10,7 @@
 
 ddclient_enabled: true
 
-ddclient_identifier: docker-registry-purger
+ddclient_identifier: ddclient
 ddclient_base_path: "/{{ ddclient_identifier }}"
 ddclient_bin_path: "{{ ddclient_base_path }}/bin"
 
@@ -19,7 +19,7 @@ ddclient_version: 1.0.0
 ddclient_uid: ""
 ddclient_gid: ""
 
-ddclient_container_image: "{{ ddclient_container_image_registry_prefix }}devture/docker-registry-purger:{{ ddclient_container_image_tag }}"
+ddclient_container_image: "{{ ddclient_container_image_registry_prefix }}devture/ddclient:{{ ddclient_container_image_tag }}"
 ddclient_container_image_tag: "{{ ddclient_version }}"
 ddclient_container_image_registry_prefix: "{{ ddclient_container_image_registry_prefix_upstream }}"
 ddclient_container_image_registry_prefix_upstream: "{{ ddclient_container_image_registry_prefix_upstream_default }}"

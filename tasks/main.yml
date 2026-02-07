@@ -8,9 +8,9 @@
   when: ddclient_enabled | bool
   tags:
     - setup-all
-    - setup-docker-registry-purger
+    - setup-ddclient
     - install-all
-    - install-docker-registry-purger
+    - install-ddclient
   block:
     - name: Validate ddclient configuration
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
@@ -21,7 +21,7 @@
   when: not ddclient_enabled | bool
   tags:
     - setup-all
-    - setup-docker-registry-purger
+    - setup-ddclient
   block:
     - name: Uninstall ddclient
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
