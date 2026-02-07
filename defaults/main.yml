@@ -75,6 +75,32 @@ ddclient_systemd_wanted_services_list_default: []
 ddclient_systemd_wanted_services_list_auto: []
 ddclient_systemd_wanted_services_list_custom: []
 
+# Specify the dynamic DNS daemon interval
+ddclient_daemon_interval: "300"
+
+# Specify router config options
+ddclient_use: "web"
+
+# Specify the endpoint to use to determine your external IP
+ddclient_web: "https://cloudflare.com/cdn-cgi/trace"
+
+# Specify the field to extract the IP address from
+# If your endpoint defined in `ddclient_web` does not need this, just set it to ""
+ddclient_web_skip: "ip="
+
+ddclient_additional_configuration_blocks: []
+
+# Holds the configurations (the domains to update DNS for, the providers they use, etc.)
+#
+# Example:
+# ddclient_domain_configurations:
+#   - provider: members.dyndns.org
+#     protocol: dyndns2
+#     username: XXXXXXXXXXXXXXXX
+#     password: XXXXXXXXXXXXXXXX
+#     domain: example.com
+ddclient_domain_configurations: []
+
 # Specify the timezone
 ddclient_environment_variables_tz: UTC
 
