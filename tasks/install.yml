@@ -13,7 +13,7 @@
     group: "{{ ddclient_gid }}"
   with_items:
     - "{{ ddclient_base_path }}"
-    - "{{ ddclient_bin_path }}"
+    - "{{ ddclient_config_path }}"
 
 - name: Ensure ddclient support files installed
   ansible.builtin.template:
@@ -24,6 +24,14 @@
     group: "{{ ddclient_gid }}"
   with_items:
     - env
+
+- name: Ensure ddclient ddclient.conf installed
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/ddclient.conf.j2"
+    dest: "{{ ddclient_config_path }}/ddclient.conf"
+    mode: "0644"
+    owner: "{{ ddclient_uid }}"
+    group: "{{ ddclient_gid }}"
 
 - name: Ensure ddclient image is pulled
   community.docker.docker_image:
