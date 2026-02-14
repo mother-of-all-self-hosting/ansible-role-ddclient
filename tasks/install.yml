@@ -80,6 +80,7 @@
           path: "{{ ddclient_container_image_self_build_src_files_path }}"
           pull: true
           args:
+      register: ddclient_container_image_build_result
 
 - name: Ensure ddclient container network is created
   community.docker.docker_network:
