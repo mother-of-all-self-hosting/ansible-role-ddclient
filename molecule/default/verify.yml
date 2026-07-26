@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify ddclient systemd service
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Wait for ddclient service to become active (up to 180s)
+      ansible.builtin.systemd:
+        name: ddclient.service
+      register: ddclient_service
+      until: ddclient_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert ddclient service is active
+      ansible.builtin.assert:
+        that: ddclient_service.status.ActiveState == 'active'
+        fail_msg: "ddclient.service not active ({{ ddclient_service.status.ActiveState }})"
+        success_msg: "ddclient.service is active"
+
+    - name: Retrieve ddclient service log for debugging
+      when: ddclient_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu ddclient.service
+      changed_when: false
+
+    - name: Show ddclient systemd service status summary
+      ansible.builtin.debug:
+        msg:
+          - "ddclient systemd: {{ ddclient_service.status.ActiveState }}"
