@@ -86,7 +86,7 @@
     # collide with Jinja.
     - name: Inspect the running ddclient container
       ansible.builtin.command:
-        cmd: "docker inspect {{ ddclient_defaults.ddclient_identifier }}"
+        cmd: "docker container inspect {{ ddclient_defaults.ddclient_identifier }}"
       register: ddclient_container_inspect
       changed_when: false
 
