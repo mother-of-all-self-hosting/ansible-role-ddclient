@@ -269,11 +269,11 @@
           which was not built for ddclient {{ ddclient_defaults.ddclient_version }}
         success_msg: "The image was built for ddclient {{ ddclient_defaults.ddclient_version }}"
 
-    - name: Show ddclient verification summary
+    - name: Show the ddclient verification summary
       ansible.builtin.debug:
         msg:
           - "ddclient systemd: {{ ddclient_service.status.ActiveState }}"
           - "ddclient version: {{ ddclient_version_output.stdout_lines | first }}"
-          - "image build: {{ ddclient_build_version.stdout_lines | first }}"
-          - "daemon sleeping on: {{ ddclient_sleep_seconds }}s of {{ ddclient_daemon_interval }}s"
-          - "would update: {{ ddclient_verify_domain }} at {{ ddclient_verify_provider }} via {{ ddclient_verify_protocol }}"
+          - "ddclient image build: {{ ddclient_build_version.stdout_lines | first }}"
+          - "ddclient daemon sleeping on: {{ ddclient_sleep_seconds }}s of {{ ddclient_daemon_interval }}s"
+          - "ddclient update: {{ ddclient_verify_domain }} at {{ ddclient_verify_provider }} via {{ ddclient_verify_protocol }}"
