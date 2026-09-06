@@ -232,7 +232,7 @@
 
     # ddclient reports the upstream version, which is what ddclient_version
     # names and what Renovate bumps.
-    - name: Ask the running container which ddclient it carries
+    - name: Query the version of the running ddclient
       ansible.builtin.command:
         cmd: "docker exec {{ ddclient_defaults.ddclient_identifier }} ddclient --version"
       register: ddclient_version_output
