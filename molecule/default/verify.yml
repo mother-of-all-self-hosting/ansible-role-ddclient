@@ -60,14 +60,14 @@
     - name: Inspect the running ddclient container
       ansible.builtin.command:
         cmd: "docker container inspect {{ ddclient_defaults.ddclient_identifier }}"
-      register: ddclient_container_inspect
+      register: ddclient_container_raw
       changed_when: false
 
     - name: Assert the ddclient container is running the image this role installs
       ansible.builtin.assert:
         that:
-          - (ddclient_container_inspect.stdout | from_json | first).State.Running
-          - "':' ~ ddclient_defaults.ddclient_version in (ddclient_container_inspect.stdout | from_json | first).Config.Image"
+          - (ddclient_container_raw.stdout | from_json | first).State.Running
+          - "':' ~ ddclient_defaults.ddclient_version in (ddclient_container_raw.stdout | from_json | first).Config.Image"
         fail_msg: "The ddclient container is not running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
         success_msg: "The ddclient container is running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
 
