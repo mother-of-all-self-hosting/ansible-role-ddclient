@@ -52,6 +52,25 @@
         cmd: journalctl -xeu ddclient.service
       changed_when: false
 
+    # Queried via the docker CLI rather than community.docker.docker_container_info,
+    # because the ansible-lint environment used by pre-commit does not have the
+    # community.docker collection and would fail the syntax check. The full JSON
+    # is parsed here rather than using `--format`, whose Go templating would
+    # collide with Jinja.
+    - name: Inspect the running ddclient container
+      ansible.builtin.command:
+        cmd: "docker container inspect {{ ddclient_defaults.ddclient_identifier }}"
+      register: ddclient_container_inspect
+      changed_when: false
+
+    - name: Assert the ddclient container is running the image this role installs
+      ansible.builtin.assert:
+        that:
+          - (ddclient_container_inspect.stdout | from_json | first).State.Running
+          - "':' ~ ddclient_defaults.ddclient_version in (ddclient_container_inspect.stdout | from_json | first).Config.Image"
+        fail_msg: "The ddclient container is not running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
+        success_msg: "The ddclient container is running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
+
     # An active unit says very little on its own here. A ddclient container
     # given no usable configuration at all still starts, still reports itself
     # healthy and still sits there running, because ddclient treats a missing,
@@ -72,25 +91,6 @@
           - "'daemon=' ~ ddclient_daemon_interval in ddclient_config_file.content | b64decode"
         fail_msg: "The rendered ddclient.conf does not describe {{ ddclient_verify_domain }} at {{ ddclient_verify_provider }}"
         success_msg: "The rendered ddclient.conf describes {{ ddclient_verify_domain }} at {{ ddclient_verify_provider }}"
-
-    # Queried via the docker CLI rather than community.docker.docker_container_info,
-    # because the ansible-lint environment used by pre-commit does not have the
-    # community.docker collection and would fail the syntax check. The full JSON
-    # is parsed here rather than using `--format`, whose Go templating would
-    # collide with Jinja.
-    - name: Inspect the running ddclient container
-      ansible.builtin.command:
-        cmd: "docker container inspect {{ ddclient_defaults.ddclient_identifier }}"
-      register: ddclient_container_inspect
-      changed_when: false
-
-    - name: Assert the ddclient container is running the image this role installs
-      ansible.builtin.assert:
-        that:
-          - (ddclient_container_inspect.stdout | from_json | first).State.Running
-          - "':' ~ ddclient_defaults.ddclient_version in (ddclient_container_inspect.stdout | from_json | first).Config.Image"
-        fail_msg: "The ddclient container is not running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
-        success_msg: "The ddclient container is running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
 
     # The first of two independent ways of showing that the rendered file is
     # what the live daemon read, and the one that looks at the daemon itself.
