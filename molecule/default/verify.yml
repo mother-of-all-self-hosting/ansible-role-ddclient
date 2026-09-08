@@ -241,14 +241,14 @@
     - name: Query the version of the running ddclient
       ansible.builtin.command:
         cmd: "docker exec {{ ddclient_defaults.ddclient_identifier }} ddclient --version"
-      register: ddclient_version_output
+      register: ddclient_version_reported
       changed_when: false
 
     - name: Assert the running ddclient is the version this role installs
       ansible.builtin.assert:
-        that: ddclient_version_output.stdout_lines | first == 'ddclient version ' ~ ddclient_defaults.ddclient_version
-        fail_msg: "ddclient reports {{ ddclient_version_output.stdout_lines | first | default('none') }}, expected {{ ddclient_defaults.ddclient_version }}"
-        success_msg: "ddclient reports {{ ddclient_version_output.stdout_lines | first }}"
+        that: ddclient_version_reported.stdout_lines | first == 'ddclient version ' ~ ddclient_defaults.ddclient_version
+        fail_msg: "ddclient reports {{ ddclient_version_reported.stdout_lines | first | default('none') }}, expected {{ ddclient_defaults.ddclient_version }}"
+        success_msg: "ddclient reports {{ ddclient_version_reported.stdout_lines | first }}"
 
     # A second, independent surface for the same thing, on the LinuxServer side
     # of the image rather than ddclient's own. This one is matched by prefix:
@@ -273,7 +273,7 @@
       ansible.builtin.debug:
         msg:
           - "ddclient systemd: {{ ddclient_service.status.ActiveState }}"
-          - "ddclient version: {{ ddclient_version_output.stdout_lines | first }}"
+          - "ddclient version: {{ ddclient_version_reported.stdout_lines | first }}"
           - "ddclient image build: {{ ddclient_build_version.stdout_lines | first }}"
           - "ddclient daemon sleeping on: {{ ddclient_sleep_seconds }}s of {{ ddclient_daemon_interval }}s"
           - "ddclient update: {{ ddclient_verify_domain }} at {{ ddclient_verify_provider }} via {{ ddclient_verify_protocol }}"
