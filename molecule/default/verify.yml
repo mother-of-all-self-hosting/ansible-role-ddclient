@@ -55,7 +55,7 @@
     - name: Retrieve the ddclient systemd service log for debugging
       when: ddclient_debug_service_enabled | bool
       ansible.builtin.command:
-        cmd: journalctl -xeu ddclient.service
+        cmd: journalctl --no-pager --output=cat --unit=ddclient.service
       changed_when: false
 
     # Queried via the docker CLI rather than community.docker.docker_container_info,
