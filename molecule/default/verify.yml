@@ -23,6 +23,9 @@
     ddclient_verify_decoy_provider: molecule-decoy-provider.invalid
     ddclient_verify_decoy_domain: molecule-decoy-host.example.org
 
+    ddclient_verify_units:
+      - ddclient.service
+
   tasks:
     - name: Verify that ddclient works
       block:
@@ -34,13 +37,14 @@
             file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
             name: ddclient_defaults
 
-        - name: Wait for the ddclient systemd service to become active (up to 180s)
+        - name: Wait for the ddclient systemd services to become active (up to 180s each)
           ansible.builtin.systemd_service:
-            name: ddclient.service
-          register: ddclient_service
-          until: ddclient_service.status.ActiveState == 'active'
+            name: "{{ item }}"
+          register: ddclient_services
+          until: ddclient_services.status.ActiveState == 'active'
           retries: 36
           delay: 5
+          loop: "{{ ddclient_verify_units }}"
           # So that giving up is reported by the assertion below rather than as a
           # wall of systemd unit properties.
           failed_when: false
@@ -48,17 +52,20 @@
         # `Restart=always` in the systemd unit means that even a container which crashes
         # and gets restarted reads as active here, so this is a precondition rather than
         # a result.
-        - name: Assert the ddclient systemd service is active
+        - name: Assert the ddclient systemd services are active
           ansible.builtin.assert:
-            that: ddclient_service.status.ActiveState == 'active'
-            fail_msg: "ddclient.service is not active ({{ ddclient_service.status.ActiveState }})"
-            success_msg: "ddclient.service is active"
+            that: ddclient_services.results | map(attribute='status.ActiveState') | unique | list == ['active']
+            fail_msg: >-
+              Not every service is active:
+              {{ dict(ddclient_verify_units | zip(ddclient_services.results | map(attribute='status.ActiveState'))) }}
+            success_msg: "Every systemd service is active"
 
-        - name: Retrieve the ddclient systemd service log for debugging
+        - name: Retrieve the ddclient systemd services log for debugging
           when: ddclient_debug_service_enabled | bool
           ansible.builtin.command:
-            cmd: journalctl --no-pager --output=cat --unit=ddclient.service
+            cmd: "journalctl --no-pager --output=cat --unit={{ item }}"
           changed_when: false
+          loop: "{{ ddclient_verify_units }}"
 
         # Queried via the docker CLI rather than community.docker.docker_container_info,
         # because the ansible-lint environment used by pre-commit does not have the
@@ -274,7 +281,7 @@
         - name: Show the ddclient verification summary
           ansible.builtin.debug:
             msg:
-              - "ddclient systemd: {{ ddclient_service.status.ActiveState }}"
+              - "ddclient systemd: {% for unit, state in ddclient_verify_units | zip(ddclient_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "ddclient version: {{ ddclient_version_reported.stdout_lines | first }}"
               - "ddclient image build: {{ ddclient_build_version.stdout_lines | first }}"
               - "ddclient daemon sleeping on: {{ ddclient_sleep_seconds }}s of {{ ddclient_daemon_interval }}s"
