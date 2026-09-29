@@ -30,6 +30,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --rm \
       --name={{ ddclient_identifier }} \
       --log-driver=none \
+      --user=0:0 \
       --network={{ ddclient_container_network }} \
       --env-file={{ ddclient_base_path }}/env \
       --mount type=bind,src={{ ddclient_config_path }},dst=/config \
