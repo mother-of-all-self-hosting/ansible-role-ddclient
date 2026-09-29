@@ -23,6 +23,15 @@
     ddclient_verify_decoy_provider: molecule-decoy-provider.invalid
     ddclient_verify_decoy_domain: molecule-decoy-host.example.org
 
+    # The unusual values the scenario configures the role with. Written down
+    # here rather than read back out of the inventory, so that a verify run
+    # compares the running container against something stated, not against
+    # whatever the scenario happens to say at the time.
+    ddclient_expected_uid: 1717
+    ddclient_expected_gid: 1717
+    ddclient_expected_timezone: Asia/Tokyo
+    ddclient_expected_timezone_abbreviation: JST
+
     ddclient_verify_units:
       - ddclient.service
 
@@ -77,6 +86,128 @@
             cmd: docker container inspect ddclient
           register: ddclient_container_raw
           changed_when: false
+
+        - name: Parse the ddclient container definition
+          ansible.builtin.set_fact:
+            ddclient_container: "{{ (ddclient_container_raw.stdout | from_json)[0] }}"
+
+        # ------------------------------------------------------------------
+        # What the role told Docker to run
+        # ------------------------------------------------------------------
+
+        - name: Collect the mounts the role asked for
+          ansible.builtin.set_fact:
+            ddclient_config_mount: "{{ ddclient_container.Mounts | selectattr('Destination', 'equalto', '/config') | list }}"
+            ddclient_extra_mount: "{{ ddclient_container.Mounts | selectattr('Destination', 'equalto', ddclient_molecule_extra_volume_dst) | list }}"
+
+        - name: Assert that the role's data path is mounted at /config
+          ansible.builtin.assert:
+            that:
+              - ddclient_config_mount | length == 1
+              - ddclient_config_mount[0].Type == 'bind'
+              - ddclient_config_mount[0].RW
+            fail_msg: "The role's data path is not bind-mounted at /config: {{ ddclient_container.Mounts }}"
+            success_msg: "{{ ddclient_config_mount[0].Source | default('?') }} is bind-mounted at /config"
+
+        # ddclient_container_additional_volumes_custom has been inert in several roles in
+        # this collection - rendered into a comment, or into a `-v` that silently
+        # dropped the options. Both the destination and the readonly option have
+        # to arrive.
+        - name: Assert that ddclient_container_additional_volumes_custom reached the container
+          ansible.builtin.assert:
+            that:
+              - ddclient_extra_mount | length == 1
+              - ddclient_extra_mount[0].Type == 'bind'
+              - ddclient_extra_mount[0].Source == ddclient_molecule_extra_volume_src
+              - not ddclient_extra_mount[0].RW
+            fail_msg: "The additional volume did not reach the container: {{ ddclient_container.Mounts }}"
+            success_msg: "The additional volume is mounted read-only at {{ ddclient_molecule_extra_volume_dst }}"
+
+        # Reading the file back from inside the
+        # container is the difference between the variable existing and it working.
+        - name: Read the marker through the additional volume
+          ansible.builtin.command:
+            cmd: >-
+              docker exec ddclient
+              cat {{ ddclient_molecule_extra_volume_dst }}/{{ ddclient_molecule_marker_filename }}
+          register: ddclient_extra_volume
+          changed_when: false
+
+        - name: Assert the additional volume is mounted into the ddclient container
+          ansible.builtin.assert:
+            that:
+              - ddclient_extra_volume.rc == 0
+              - ddclient_extra_volume.stdout | trim == ddclient_molecule_extra_volume_marker
+            fail_msg: "The additional volume did not carry the marker into the container"
+            success_msg: "The additional volume carries the marker into the container"
+
+        # Unlike other services whose container image is provided by linuxserver.io,
+        # ddclient's container does not support running as non-root user. Values specified
+        # with PUID and PGID are applied after the container is started.
+        - name: Assert that the container itself runs as root
+          ansible.builtin.assert:
+            that:
+              - ddclient_container.Config.User == '0:0'
+            fail_msg: >-
+              The container itself runs as root.
+            success_msg: "The container runs as {{ ddclient_container.Config.User }}"
+
+        # See the comment on the previous step.
+        - name: Assert that the role's uid and gid reached the container
+          ansible.builtin.assert:
+            that:
+              - ('PUID=' ~ ddclient_expected_uid) in ddclient_container.Config.Env
+              - ('PGID=' ~ ddclient_expected_gid) in ddclient_container.Config.Env
+            fail_msg: >-
+              The container runs
+              with {{ ddclient_container.Config.Env | select('match', 'P[UG]ID=') | list }}
+            success_msg: "The container carries the matching PUID/PGID"
+
+        - name: Assert that the role's timezone reached the container environment
+          ansible.builtin.assert:
+            that:
+              - ('TZ=' ~ ddclient_expected_timezone) in ddclient_container.Config.Env
+            fail_msg: "templates/env.j2 did not put TZ={{ ddclient_expected_timezone }} on the container"
+            success_msg: "The container environment carries TZ={{ ddclient_expected_timezone }}"
+
+        - name: Assert that the container image is the pinned version
+          ansible.builtin.assert:
+            that:
+              - ddclient_container.Config.Image == 'ghcr.io/linuxserver/ddclient:' ~ ddclient_defaults.ddclient_version
+            fail_msg: >-
+              The container runs {{ ddclient_container.Config.Image }}, not the
+              {{ ddclient_defaults.ddclient_version }} pinned in defaults/main.yml
+            success_msg: "The container runs {{ ddclient_container.Config.Image }}"
+
+        # ------------------------------------------------------------------
+        # What the process inside the container actually sees
+        # ------------------------------------------------------------------
+
+        - name: Ask the ddclient container which timezone and user it is running in
+          ansible.builtin.command:
+            cmd: docker exec ddclient sh -c 'date +%Z; id -u; id -g'
+          register: ddclient_process_identity
+          changed_when: false
+
+        # Unlike other services whose container image is provided by linuxserver.io,
+        # ddclient's container does not support running as non-root user.
+        - name: Assert that the ddclient process runs in the role's timezone, as the root user
+          ansible.builtin.assert:
+            that:
+              - ddclient_process_identity.stdout_lines[0] == ddclient_expected_timezone_abbreviation
+              - ddclient_process_identity.stdout_lines[1] == "0"
+              - ddclient_process_identity.stdout_lines[2] == "0"
+            fail_msg: >-
+              The container reports zone/uid/gid {{ ddclient_process_identity.stdout_lines }},
+              expected [{{ ddclient_expected_timezone_abbreviation }},
+              0, 0]
+            success_msg: >-
+              The ddclient process runs in {{ ddclient_process_identity.stdout_lines[0] }}
+              as {{ ddclient_process_identity.stdout_lines[1] }}:{{ ddclient_process_identity.stdout_lines[2] }}
+
+        # ------------------------------------------------------------------
+        #
+        # ------------------------------------------------------------------
 
         - name: Assert the ddclient container is running the image this role installs
           ansible.builtin.assert:
