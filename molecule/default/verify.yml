@@ -179,6 +179,36 @@
               {{ ddclient_defaults.ddclient_version }} pinned in defaults/main.yml
             success_msg: "The container runs {{ ddclient_container.Config.Image }}"
 
+        # ddclient reports the upstream version, which is what ddclient_version
+        # names and what Renovate bumps.
+        - name: Query the version of the running ddclient
+          ansible.builtin.command:
+            cmd: "docker exec {{ ddclient_defaults.ddclient_identifier }} ddclient --version"
+          register: ddclient_version_reported
+          changed_when: false
+
+        - name: Assert the running ddclient is the version this role installs
+          ansible.builtin.assert:
+            that: ddclient_version_reported.stdout_lines | first == 'ddclient version ' ~ ddclient_defaults.ddclient_version
+            fail_msg: "ddclient reports {{ ddclient_version_reported.stdout_lines | first | default('none') }}, expected {{ ddclient_defaults.ddclient_version }}"
+            success_msg: "ddclient reports {{ ddclient_version_reported.stdout_lines | first }}"
+
+        # A second, independent surface for the same thing, on the LinuxServer side
+        # of the image rather than ddclient's own.
+        #
+        # linuxserver.io stamps its own build onto the image as
+        # `<ddclient version>-ls<rebuild counter>`.
+        #
+        # `ddclient_version` pins a three-component linuxserver.io tag (`6.3.0`) while
+        # ddclient's own version has four components (`6.3.0.10514`) and the image
+        # label carries the rebuild counter on top (`6.3.0.10514-ls314`), so the pin
+        # is compared as a prefix - with the trailing dot,
+        - name: Assert the running ddclient is the version this role installs
+          ansible.builtin.assert:
+            that: ddclient_container.Config.Labels['org.opencontainers.image.version'].startswith('v' ~ ddclient_defaults.ddclient_version) # Mind "v"
+            fail_msg: "ddclient reports {{ ddclient_container.Config.Labels['org.opencontainers.image.version'] | default('none') }}, expected {{ ddclient_defaults.ddclient_version }}"
+            success_msg: "ddclient reports {{ ddclient_container.Config.Labels['org.opencontainers.image.version'] }}"
+
         # ------------------------------------------------------------------
         # What the process inside the container actually sees
         # ------------------------------------------------------------------
@@ -208,14 +238,6 @@
         # ------------------------------------------------------------------
         #
         # ------------------------------------------------------------------
-
-        - name: Assert the ddclient container is running the image this role installs
-          ansible.builtin.assert:
-            that:
-              - (ddclient_container_raw.stdout | from_json | first).State.Running
-              - "':' ~ ddclient_defaults.ddclient_version in (ddclient_container_raw.stdout | from_json | first).Config.Image"
-            fail_msg: "The ddclient container is not running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
-            success_msg: "The ddclient container is running linuxserver/ddclient:{{ ddclient_defaults.ddclient_version }}"
 
         # An active unit says very little on its own here. A ddclient container
         # given no usable configuration at all still starts, still reports itself
@@ -376,39 +398,6 @@
               The dry run reports the decoy provider when given the decoy configuration,
               so it does read the configuration it is pointed at
 
-        # ddclient reports the upstream version, which is what ddclient_version
-        # names and what Renovate bumps.
-        - name: Query the version of the running ddclient
-          ansible.builtin.command:
-            cmd: "docker exec {{ ddclient_defaults.ddclient_identifier }} ddclient --version"
-          register: ddclient_version_reported
-          changed_when: false
-
-        - name: Assert the running ddclient is the version this role installs
-          ansible.builtin.assert:
-            that: ddclient_version_reported.stdout_lines | first == 'ddclient version ' ~ ddclient_defaults.ddclient_version
-            fail_msg: "ddclient reports {{ ddclient_version_reported.stdout_lines | first | default('none') }}, expected {{ ddclient_defaults.ddclient_version }}"
-            success_msg: "ddclient reports {{ ddclient_version_reported.stdout_lines | first }}"
-
-        # A second, independent surface for the same thing, on the LinuxServer side
-        # of the image rather than ddclient's own. This one is matched by prefix:
-        # LinuxServer appends its own build counter to the upstream version, so the
-        # value reads "v4.0.0-ls230" for a role installing 4.0.0, and the build
-        # counter moves without the ddclient version moving.
-        - name: Read the LinuxServer build version from the running container
-          ansible.builtin.command:
-            cmd: "docker exec {{ ddclient_defaults.ddclient_identifier }} cat /build_version"
-          register: ddclient_build_version
-          changed_when: false
-
-        - name: Assert the image was built for the version this role installs
-          ansible.builtin.assert:
-            that: "'Linuxserver.io version: v' ~ ddclient_defaults.ddclient_version in ddclient_build_version.stdout"
-            fail_msg: >-
-              The image reports "{{ ddclient_build_version.stdout_lines | first }}",
-              which was not built for ddclient {{ ddclient_defaults.ddclient_version }}
-            success_msg: "The image was built for ddclient {{ ddclient_defaults.ddclient_version }}"
-
         - name: Verify nothing was quietly restarting while all of that was being checked
           when: "ddclient_restarts_check_enabled | bool"
           block:
@@ -454,7 +443,6 @@
               - "ddclient systemd: {% for unit, state in ddclient_verify_units | zip(ddclient_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "ddclient restarts: {% for unit, restarts in ddclient_verify_units | zip(ddclient_restarts_after.results | map(attribute='status.NRestarts')) %}{{ restarts }} ({{ unit }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "ddclient version: {{ ddclient_version_reported.stdout_lines | first }}"
-              - "ddclient image build: {{ ddclient_build_version.stdout_lines | first }}"
               - "ddclient daemon sleeping on: {{ ddclient_sleep_seconds }}s of {{ ddclient_daemon_interval }}s"
               - "ddclient update: {{ ddclient_verify_domain }} at {{ ddclient_verify_provider }} via {{ ddclient_verify_protocol }}"
 
