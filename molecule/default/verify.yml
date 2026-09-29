@@ -183,7 +183,7 @@
         # names and what Renovate bumps.
         - name: Query the version of the running ddclient
           ansible.builtin.command:
-            cmd: "docker exec {{ ddclient_defaults.ddclient_identifier }} ddclient --version"
+            cmd: docker exec ddclient ddclient --version
           register: ddclient_version_reported
           changed_when: false
 
@@ -247,7 +247,7 @@
         # with, not merely that it is up.
         - name: Read the ddclient configuration file this role rendered
           ansible.builtin.slurp:
-            src: "/{{ ddclient_defaults.ddclient_identifier }}/config/ddclient.conf"
+            src: /ddclient/config/ddclient.conf
           register: ddclient_config_file
 
         - name: Assert the rendered configuration carries what this scenario asked for
@@ -272,7 +272,7 @@
         # file, and could not be one that fell back.
         - name: Wait for the ddclient daemon to settle between passes (up to 120s)
           ansible.builtin.command:
-            cmd: "docker exec {{ ddclient_defaults.ddclient_identifier }} ps -eo args"
+            cmd: docker exec ddclient ps -eo args
           register: ddclient_process_list
           changed_when: false
           until: "'ddclient - sleeping for' in ddclient_process_list.stdout"
@@ -322,7 +322,7 @@
         - name: Ask ddclient what it would send, without letting it send anything
           ansible.builtin.command:
             cmd: >-
-              docker exec {{ ddclient_defaults.ddclient_identifier }}
+              docker exec ddclient
               timeout 30 ddclient
               --file /config/ddclient.conf
               --daemon=0 --foreground --noexec --force --verbose --noquiet
@@ -356,7 +356,7 @@
         # own cache file, so that it cannot disturb the daemon's.
         - name: Install a decoy configuration for the falsification check
           ansible.builtin.copy:
-            dest: "/{{ ddclient_defaults.ddclient_identifier }}/config/molecule-decoy.conf"
+            dest: /ddclient/config/molecule-decoy.conf
             mode: "0600"
             owner: "{{ ddclient_uid }}"
             group: "{{ ddclient_gid }}"
@@ -371,7 +371,7 @@
         - name: Ask ddclient what it would send for the decoy configuration
           ansible.builtin.command:
             cmd: >-
-              docker exec {{ ddclient_defaults.ddclient_identifier }}
+              docker exec ddclient
               timeout 30 ddclient
               --file /config/molecule-decoy.conf
               --cache /tmp/molecule-decoy.cache
@@ -383,7 +383,7 @@
 
         - name: Remove the decoy configuration
           ansible.builtin.file:
-            path: "/{{ ddclient_defaults.ddclient_identifier }}/config/molecule-decoy.conf"
+            path: /ddclient/config/molecule-decoy.conf
             state: absent
 
         - name: Assert the dry run follows the configuration it is given
