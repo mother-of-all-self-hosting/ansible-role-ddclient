@@ -60,6 +60,12 @@ ddclient_container_additional_volumes: "{{ ddclient_container_additional_volumes
 ddclient_container_additional_volumes_auto: []
 ddclient_container_additional_volumes_custom: []
 
+# Specify the size of the container's tmpfs volume (/run)
+ddclient_container_tmpfs_run_size: 128m
+
+# Specify the size of the container's tmpfs volume (/tmp)
+ddclient_container_tmpfs_tmp_size: 128m
+
 # A list of extra arguments to pass to the container (`docker create` command)
 ddclient_container_extra_arguments: "{{ ddclient_container_extra_arguments_auto + ddclient_container_extra_arguments_custom }}"
 ddclient_container_extra_arguments_auto: []
