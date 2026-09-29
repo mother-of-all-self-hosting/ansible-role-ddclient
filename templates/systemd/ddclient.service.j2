@@ -24,7 +24,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_sh }} -c '{{ ddclient_c
 
 {#
   PUID and PGID are specified on env.j2 to run the container as ddclient_uid:ddclient_gid
-  See: https://github.com/linuxserver/docker-ddclient/blob/master/README.md#user--group-identifiers
+  See: https://docs.linuxserver.io/images/docker-ddclient/#user-group-identifiers
 #}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --rm \
