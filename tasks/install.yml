@@ -4,16 +4,20 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
+# Each time the container starts, the linuxserver/ddclient image sets the mode of
+# /config (ddclient_config_path on the host) to 0700 and of every file in it to 0600.
+# The config directory and ddclient.conf use the same modes, so that the next playbook
+# run does not change them back and mark ddclient for a restart.
 - name: Ensure ddclient paths exist
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
-    mode: "0750"
+    mode: "{{ item.mode }}"
     owner: "{{ ddclient_uid }}"
     group: "{{ ddclient_gid }}"
   with_items:
-    - "{{ ddclient_base_path }}"
-    - "{{ ddclient_config_path }}"
+    - {path: "{{ ddclient_base_path }}", mode: "0750"}
+    - {path: "{{ ddclient_config_path }}", mode: "0700"}
 
 - name: Ensure ddclient support file installed
   ansible.builtin.template:
@@ -26,11 +30,12 @@
     - env
   register: ddclient_support_files_result
 
+# Matches the mode the container image sets; see "Ensure ddclient paths exist".
 - name: Ensure ddclient ddclient.conf installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/ddclient.conf.j2"
     dest: "{{ ddclient_config_path }}/ddclient.conf"
-    mode: "0644"
+    mode: "0600"
     owner: "{{ ddclient_uid }}"
     group: "{{ ddclient_gid }}"
   register: ddclient_config_file_result
