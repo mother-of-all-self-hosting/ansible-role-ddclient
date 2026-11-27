@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2026 spatterlight
 # SPDX-FileCopyrightText: 2026 Suguru Hirahara
 #
@@ -33,3 +34,20 @@
       ansible.builtin.systemd_service:
         name: ddclient.service
         state: started
+
+    # The unit is Type=simple, so systemd counts it as started as soon as
+    # `docker start` runs, which can be before the container has set the modes
+    # under /config (see tasks/install.yml). The image starts the ddclient daemon
+    # only after that, and the daemon retitles itself "ddclient - sleeping for
+    # N seconds" once its first pass is done. Waiting for that title here makes
+    # the idempotence converge run against the modes the container set, so a mode
+    # mismatch shows up as a change instead of depending on how fast the
+    # container starts.
+    - name: Wait for the ddclient daemon to settle between passes (up to 120s)
+      ansible.builtin.command:
+        cmd: docker exec ddclient ps -eo args
+      register: ddclient_process_list
+      changed_when: false
+      until: "'ddclient - sleeping for' in ddclient_process_list.stdout"
+      retries: 24
+      delay: 5

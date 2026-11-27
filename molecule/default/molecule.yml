@@ -119,12 +119,7 @@ scenario:
     - create
     - prepare
     - converge
-    # Idempotence is disabled because the role renders ddclient.conf with mode
-    # 0644, while the container image chmods everything under /config to 0600
-    # on every start. The bind mount makes that a change to the file on the
-    # host, which the next converge undoes, so the two keep flipping the mode
-    # back and forth.
-    # - idempotence
+    - idempotence
     - side_effect
     - verify
     - cleanup
